@@ -120,7 +120,16 @@ def extraer_autorizante(texto):
     coincidencia = re.search(patron, texto, re.DOTALL)
 
     if coincidencia:
-        return limpiar_espacios(coincidencia.group(1))
+        autorizante = limpiar_espacios(coincidencia.group(1))
+
+        autorizante = re.sub(
+            r"\b\d{2}/\d{2}/\d{4}\s*-\s*\d{2}:\d{2}\b",
+            "",
+            autorizante
+        )
+
+        autorizante = limpiar_espacios(autorizante)
+        return autorizante if autorizante else None
 
     return None
 
