@@ -34,6 +34,7 @@ CATEGORIAS_VALIDAS = [
     "Fonoaudiología",
     "Terapista ocupacional",
     "Operador terapéutico",
+    "Socios - Dividendos",
     "Otros",
 ]
 
