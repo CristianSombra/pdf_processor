@@ -56,11 +56,18 @@ def extraer_titular_destino(texto):
     patrones = [
         r"CBU Destino\s+\d+\s+Titular\s+([A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s,\./'\-\+\&\(\)]+?)\s+CUIT / CUIL / CDI",
         r"CBU\s+\d+\s+Titular\s+([A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s,\./'\-\+\&\(\)]+?)\s+CUIT / CUIL / CDI",
+        r"Concepto\s+([A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s,\./'\-\+\&\(\)]+?)\s+Titular",
     ]
-    coincidencia = buscar_primer_patron(texto, patrones)
+
+    coincidencia = buscar_primer_patron(texto, patrones, re.DOTALL)
 
     if coincidencia:
-        return limpiar_espacios(coincidencia.group(1))
+        valor = limpiar_espacios(coincidencia.group(1))
+
+        if valor in ["Honorarios", "Varios", "Alquiler"]:
+            return None
+
+        return valor
 
     return None
 
@@ -85,8 +92,12 @@ def extraer_importe_transferir(texto):
 
 
 def extraer_concepto(texto):
-    patron = r"Concepto\s+(.+?)\s+Referencia"
-    coincidencia = re.search(patron, texto, re.DOTALL)
+    patrones = [
+        r"Concepto\s+(.+?)\s+Referencia",
+        r"Transferencias Terceros otros Bancos\s+(.+?)\s+Concepto",
+    ]
+
+    coincidencia = buscar_primer_patron(texto, patrones, re.DOTALL)
 
     if coincidencia:
         return limpiar_espacios(coincidencia.group(1))
@@ -103,14 +114,22 @@ def extraer_observaciones(texto):
     coincidencia = buscar_primer_patron(texto, patrones, re.DOTALL)
 
     if coincidencia:
-        return limpiar_espacios(coincidencia.group(1))
+        valor = limpiar_espacios(coincidencia.group(1))
 
-    # fallback → usar Referencia si no hay Observaciones
-    patron_referencia = r"Referencia\s+(.+?)\s+Usuarios Intervinientes"
+        if "Ingresante" not in valor and "Autorizantes" not in valor:
+            return valor
+
+    patron_referencia = r"Referencia\s+([A-Za-zÁÉÍÓÚáéíóúÑñ0-9\-_\/\.]+?)\s+Transferencias Terceros"
     coincidencia_ref = re.search(patron_referencia, texto, re.DOTALL)
 
     if coincidencia_ref:
         return limpiar_espacios(coincidencia_ref.group(1))
+
+    patron_referencia_alt = r"Referencia\s+([A-Za-zÁÉÍÓÚáéíóúÑñ0-9\-_\/\.]+?)\s+Usuarios Intervinientes"
+    coincidencia_ref_alt = re.search(patron_referencia_alt, texto, re.DOTALL)
+
+    if coincidencia_ref_alt:
+        return limpiar_espacios(coincidencia_ref_alt.group(1))
 
     return None
 

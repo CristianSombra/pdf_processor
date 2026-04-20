@@ -19,6 +19,9 @@ def sanitizar_categoria(nombre_categoria):
 def procesar_pdf(ruta_pdf, categoria):
     try:
         texto = extraer_texto_pdf(ruta_pdf)
+        # print("\n===== INICIO TEXTO EXTRAIDO =====\n")
+        # print(texto)
+        # print("\n===== FIN TEXTO EXTRAIDO =====\n")
         datos = extraer_datos(texto)
         resultado = guardar_operacion(datos, categoria)
 
