@@ -54,8 +54,8 @@ def extraer_fecha_hora(texto):
 
 def extraer_titular_destino(texto):
     patrones = [
-        r"CBU Destino\s+\d+\s+Titular\s+([A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s,./'\-]+?)\s+CUIT / CUIL / CDI",
-        r"CBU\s+\d+\s+Titular\s+([A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s,./'\-]+?)\s+CUIT / CUIL / CDI",
+        r"CBU Destino\s+\d+\s+Titular\s+([A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s,\./'\-\+\&\(\)]+?)\s+CUIT / CUIL / CDI",
+        r"CBU\s+\d+\s+Titular\s+([A-Za-zÁÉÍÓÚáéíóúÑñ0-9\s,\./'\-\+\&\(\)]+?)\s+CUIT / CUIL / CDI",
     ]
     coincidencia = buscar_primer_patron(texto, patrones)
 

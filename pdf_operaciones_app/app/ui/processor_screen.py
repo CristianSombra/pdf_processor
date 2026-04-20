@@ -1,4 +1,5 @@
 import os
+import sys
 from openpyxl import Workbook
 from PySide6.QtWidgets import (
     QWidget,
@@ -22,6 +23,7 @@ from PySide6.QtGui import QPixmap
 from app.services.pdf_processor import procesar_pdf
 from app.database.connection import SessionLocal
 from app.database.models import Operacion
+from app.services.operacion_service import limpiar_base_datos
 
 
 CATEGORIAS_VALIDAS = [
@@ -38,6 +40,10 @@ CATEGORIAS_VALIDAS = [
     "Otros",
 ]
 
+def obtener_ruta_recurso(ruta_relativa):
+    if hasattr(sys, '_MEIPASS'):
+        return os.path.join(sys._MEIPASS, ruta_relativa)
+    return os.path.join(os.path.abspath("."), ruta_relativa)
 
 class ProcessorScreen(QWidget):
     def __init__(self):
@@ -51,7 +57,8 @@ class ProcessorScreen(QWidget):
         header_layout = QHBoxLayout()
 
         self.logo_label = QLabel()
-        pixmap = QPixmap("app/assets/logo_camsa.png")
+        ruta_logo = obtener_ruta_recurso("app/assets/logo_camsa.png")
+        pixmap = QPixmap(ruta_logo)
         if not pixmap.isNull():
             self.logo_label.setPixmap(
                 pixmap.scaled(
@@ -83,6 +90,10 @@ class ProcessorScreen(QWidget):
         self.boton_exportar = QPushButton("Exportar")
         self.boton_exportar.clicked.connect(self.exportar_datos)
         botones_layout.addWidget(self.boton_exportar)
+
+        self.boton_limpiar_db = QPushButton("Limpiar base de datos")
+        self.boton_limpiar_db.clicked.connect(self.limpiar_base_datos_ui)
+        botones_layout.addWidget(self.boton_limpiar_db)
 
         self.log = QTextEdit()
         self.log.setReadOnly(True)
@@ -419,3 +430,30 @@ class ProcessorScreen(QWidget):
         finally:
             self.procesando = False
             self.label.setText("Arrastrá uno o varios PDFs acá")
+
+    def limpiar_base_datos_ui(self):
+        if self.procesando:
+            QMessageBox.warning(self, "Procesamiento en curso", "Esperá a que termine el procesamiento actual.")
+            return
+    
+        confirmacion = QMessageBox.question(
+            self,
+            "Confirmar limpieza",
+            "¿Seguro que querés borrar todos los registros de la base de datos?",
+            QMessageBox.Yes | QMessageBox.No
+        )
+    
+        if confirmacion != QMessageBox.Yes:
+            return
+    
+        resultado = limpiar_base_datos()
+    
+        if resultado["ok"]:
+            self.tabla.setRowCount(0)
+            self.tabla.setVisible(False)
+            self.log.setVisible(True)
+            self.log.clear()
+            self.label.setText("Arrastrá uno o varios PDFs acá")
+            QMessageBox.information(self, "Éxito", resultado["mensaje"])
+        else:
+            QMessageBox.critical(self, "Error", resultado["mensaje"])

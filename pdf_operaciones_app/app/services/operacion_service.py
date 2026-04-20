@@ -119,3 +119,22 @@ def guardar_operacion(datos, categoria):
 
     finally:
         session.close()
+
+def limpiar_base_datos():
+    session = SessionLocal()
+
+    try:
+        session.query(Operacion).delete()
+        session.commit()
+        return {
+            "ok": True,
+            "mensaje": "Base de datos limpiada correctamente"
+        }
+    except Exception as e:
+        session.rollback()
+        return {
+            "ok": False,
+            "mensaje": f"Error al limpiar la base de datos: {e}"
+        }
+    finally:
+        session.close()
